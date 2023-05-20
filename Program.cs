@@ -21,7 +21,7 @@ namespace Meira
             var discordConfig = new DiscordConfiguration()
             {
                 Intents = DiscordIntents.All,
-                Token = configJsonFile.token,
+                Token = configJsonFile.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true
             };
@@ -37,22 +37,19 @@ namespace Meira
 
             var commandsConfig = new CommandsNextConfiguration()
             {
-                StringPrefixes = new string[] { configJsonFile.prefix },
+                StringPrefixes = new string[] { configJsonFile.Prefix },
                 EnableMentionPrefix = true,
                 EnableDms = true,
                 EnableDefaultHelp = false,
             };
 
+            var slashCommandsConfig = Client.UseSlashCommands();
+            slashCommandsConfig.RegisterCommands<AdminSlashCommands>();
+
             Commands = Client.UseCommandsNext(commandsConfig);
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
-        }
-
-        private void RegisterCommands()
-        {
-            var slashCommandsConfig = Client.UseSlashCommands();
-            slashCommandsConfig.RegisterCommands<AdminSlashCommands>();
         }
 
         private static Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
