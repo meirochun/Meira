@@ -3,12 +3,16 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Meira.Interfaces;
+using Meira.Validations;
 
 namespace Meira.SlashCommands
 {
     [RequirePermissions(Permissions.Administrator, ignoreDms: true)]
-    public class AdminSlashCommands : ApplicationCommandModule, IDefaultEmbedMessages
+    internal class AdminSlashCommands : ApplicationCommandModule, IDefaultEmbedMessages
     {
+
+        #region Ban Command
+
         [SlashCommand("ban", "Bans a user from server")]
         public async Task BanCommand(InteractionContext ctx,
             [Option("user", "The user you wants to ban")] DiscordUser user,
@@ -17,10 +21,10 @@ namespace Meira.SlashCommands
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.Permissions.HasPermission(Permissions.Administrator))
+            if (DefaultValidations.IsAdministrator(ctx.Member))
             {
                 var member = (DiscordMember)user;
-                if (!CheckIsMeira(member))
+                if (!DefaultValidations.IsMeira(member))
                 {
                     await ctx.Guild.BanMemberAsync(member, (int)deleteMessageDays, reason);
 
@@ -38,7 +42,7 @@ namespace Meira.SlashCommands
                     var meiraMessage = new DiscordEmbedBuilder()
                     {
                         Title = "Access denied",
-                        Description = "You cannot force me ban myself! 😡", 
+                        Description = "You cannot force me ban myself! 😡",
                         Color = DiscordColor.Red
                     };
 
@@ -51,16 +55,20 @@ namespace Meira.SlashCommands
             }
         }
 
+        #endregion Ban Command
+
+        #region Kick Command
+
         [SlashCommand("kick", "Kicks a user from server")]
         public async Task KickCommand(InteractionContext ctx,
             [Option("user", "The user you wants to kick")] DiscordUser user)
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.Permissions.HasPermission(Permissions.Administrator))
+            if (DefaultValidations.IsAdministrator(ctx.Member))
             {
                 var member = (DiscordMember)user;
-                if (!CheckIsMeira(member))
+                if (!DefaultValidations.IsMeira(member))
                 {
                     await member.RemoveAsync();
 
@@ -90,15 +98,66 @@ namespace Meira.SlashCommands
             }
         }
 
-        private static bool CheckIsMeira(DiscordMember member)
+        #endregion Kick Command
+
+        #region Timeout Command
+
+        [SlashCommand("timeout", "Timeout a user")]
+        public async Task TimeoutCommand(InteractionContext ctx,
+            [Option("user", "The user you want to timeout")] DiscordUser user,
+            [Option("duration", "Duration of the timeout in seconds")] long duration)
         {
-            // This is Meira's ID
-            if (member.Id == 1107789924314402836)
+            await ctx.DeferAsync();
+
+            if (DefaultValidations.IsAdministrator(ctx.Member))
             {
-                return true;
+                var timeDuration = DateTime.Now + TimeSpan.FromSeconds(duration);
+                var member = (DiscordMember)user;
+                await member.TimeoutAsync(timeDuration);
+
+                var timeoutMessage = new DiscordEmbedBuilder()
+                {
+                    Title = member.Username + " has been timeout",
+                    Description = "Duration " + TimeSpan.FromSeconds(duration).ToString(),
+                    Color = DiscordColor.Orange
+                };
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
             }
-            return false;
+            else
+            {
+                await NonAdminMessage(ctx);
+            }
         }
+
+        #endregion Timeout Command
+
+        #region Cancel Timeout Command
+
+        [SlashCommand("cancel-timeout", "Cancel the timeout of a user")]
+        public async Task CancelTimeout(InteractionContext ctx, [Option("user", "The user you want to cancel timeout")] DiscordUser user)
+        {
+            if (DefaultValidations.IsAdministrator(ctx.Member))
+            {
+                await ctx.DeferAsync();
+                var member = (DiscordMember)user;
+                await member.TimeoutAsync(DateTime.Now);
+
+                var timeoutMessage = new DiscordEmbedBuilder()
+                {
+                    Title = "Timeout canceled for " + member.Username + "!",
+                    Color = DiscordColor.SapGreen
+                };
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
+            }
+            else
+            {
+                await NonAdminMessage(ctx);
+            }
+        }
+
+        #endregion Cancel Timeout Command
 
         public async Task NonAdminMessage(InteractionContext ctx)
         {
