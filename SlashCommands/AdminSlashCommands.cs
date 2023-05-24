@@ -21,10 +21,10 @@ namespace Meira.SlashCommands
         {
             await ctx.DeferAsync();
 
-            if (DefaultValidations.IsAdministrator(ctx.Member))
+            if (ctx.Member.IsAdministrator())
             {
                 var member = (DiscordMember)user;
-                if (!DefaultValidations.IsMeira(member))
+                if (!member.IsMeira())
                 {
                     await ctx.Guild.BanMemberAsync(member, (int)deleteMessageDays, reason);
 
@@ -65,10 +65,10 @@ namespace Meira.SlashCommands
         {
             await ctx.DeferAsync();
 
-            if (DefaultValidations.IsAdministrator(ctx.Member))
+            if (ctx.Member.IsAdministrator())
             {
                 var member = (DiscordMember)user;
-                if (!DefaultValidations.IsMeira(member))
+                if (!member.IsMeira())
                 {
                     await member.RemoveAsync();
 
@@ -109,18 +109,25 @@ namespace Meira.SlashCommands
         {
             await ctx.DeferAsync();
 
-            if (DefaultValidations.IsAdministrator(ctx.Member))
+            if (ctx.Member.IsAdministrator())
             {
+                DiscordEmbedBuilder timeoutMessage = new();
                 var timeDuration = DateTime.Now + TimeSpan.FromSeconds(duration);
                 var member = (DiscordMember)user;
-                await member.TimeoutAsync(timeDuration);
 
-                var timeoutMessage = new DiscordEmbedBuilder()
+                if (member.IsAdministrator())
                 {
-                    Title = member.Username + " has been timeout",
-                    Description = "Duration " + TimeSpan.FromSeconds(duration).ToString(),
-                    Color = DiscordColor.Orange
-                };
+                    // Message builder when is an administrator, owner or even Meira
+                    timeoutMessage.Title = @$"You can't timeout {string.Format(member.IsOwner ? "the owner" : member.IsMeira() ? "Meira" : "an administrator")}!";
+                    timeoutMessage.Color = DiscordColor.DarkRed;
+                }
+                else
+                {
+                    await member.TimeoutAsync(timeDuration);
+                    timeoutMessage.Color = DiscordColor.Orange;
+                    timeoutMessage.Title = member.Username + " has been timeout";
+                    timeoutMessage.Description = "Duration " + TimeSpan.FromSeconds(duration).ToString();
+                }
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
             }
@@ -137,26 +144,38 @@ namespace Meira.SlashCommands
         [SlashCommand("cancel-timeout", "Cancel the timeout of a user")]
         public async Task CancelTimeout(InteractionContext ctx, [Option("user", "The user you want to cancel timeout")] DiscordUser user)
         {
-            if (DefaultValidations.IsAdministrator(ctx.Member))
+            if (ctx.Member.IsAdministrator())
             {
+                DiscordEmbedBuilder timeoutMessage = new();
                 await ctx.DeferAsync();
+
                 var member = (DiscordMember)user;
-                await member.TimeoutAsync(DateTime.Now);
 
-                var timeoutMessage = new DiscordEmbedBuilder()
+                if (member?.CommunicationDisabledUntil == null || member?.CommunicationDisabledUntil.Value < DateTime.Now)
                 {
-                    Title = "Timeout canceled for " + member.Username + "!",
-                    Color = DiscordColor.SapGreen
-                };
+                    timeoutMessage.WithTitle(member.Username + " is already free");
+                    timeoutMessage.WithColor(DiscordColor.SapGreen);
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
+                    return;
+                }
+                else
+                {
+                    // Message builder when is actually possible timeout
+                    timeoutMessage.Title = $"{member.Username} is now free";
+                    timeoutMessage.Color = DiscordColor.SapGreen;
 
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
+                    // DateTime.Now minus 1 because in case of delay, the user won't get jumpscared by "YOU GOT TIMEOUT" big red text
+                    await member.TimeoutAsync(DateTime.Now - TimeSpan.FromSeconds(1));
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(timeoutMessage));
+                    return;
+                }
             }
             else
             {
                 await NonAdminMessage(ctx);
             }
         }
-
+        
         #endregion Cancel Timeout Command
 
         public async Task NonAdminMessage(InteractionContext ctx)

@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.Entities;
 
 namespace Meira.Validations
 {
     internal static class DefaultValidations
     {
-        public static bool IsMeira(DiscordMember member)
+        /// <summary>
+        /// Extension method to check if Guild's member is Meira (bot).
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public static bool IsMeira(this DiscordMember member)
         {
             // This is Meira's ID
             if (member.Id == 1107789924314402836)
@@ -20,7 +20,12 @@ namespace Meira.Validations
             return false;
         }
 
-        public static bool IsAdministrator(DiscordMember member)
+        /// <summary>
+        /// Extension method to check if Guild's member is an administrator or has the permission.
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public static bool IsAdministrator(this DiscordMember member)
         {
             if (member.Permissions.HasPermission(Permissions.Administrator))
             {
