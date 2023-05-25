@@ -13,7 +13,8 @@ namespace Meira
     {
         public static DiscordClient Client { get; private set; }
         public static CommandsNextExtension Commands { get; private set; }
-        static async Task Main(string[] args)
+
+        private static async Task Main(string[] args)
         {
             var configJsonFile = new JSONReader();
             await configJsonFile.ReadJSON();

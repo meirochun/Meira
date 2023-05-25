@@ -2,14 +2,46 @@
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using Meira.Interfaces;
+using Meira.Utils;
 using Meira.Validations;
 
 namespace Meira.SlashCommands
 {
     [RequirePermissions(Permissions.Administrator, ignoreDms: true)]
-    internal class AdminSlashCommands : ApplicationCommandModule, IDefaultEmbedMessages
+    internal class AdminSlashCommands : ApplicationCommandModule
     {
+        private readonly DefaultEmbedMessages _defaultEmbedMessages = new();
+
+        #region List Admin Commands
+
+        [SlashCommand("admin", "List of admin commands")]
+        public async Task AdminCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync();
+
+            if (ctx.Member.IsAdministrator())
+            {
+                var embed = new DiscordEmbedBuilder()
+                {
+                    Title = "Admin Commands",
+                    Description = "Commands for server administrators",
+                    Color = DiscordColor.Blurple
+                };
+
+                embed.AddField("Ban", "Bans a user from server");
+                embed.AddField("Kick", "Kicks a user from server");
+                embed.AddField("Timeout", "Timeout a user");
+                embed.AddField("Cancel Timeout", "Cancel the timeout of a user");
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+            }
+            else
+            {
+                await _defaultEmbedMessages.NonAdminMessage(ctx);
+            }
+        }
+
+        #endregion
 
         #region Ban Command
 
@@ -51,7 +83,7 @@ namespace Meira.SlashCommands
             }
             else
             {
-                await NonAdminMessage(ctx);
+                await _defaultEmbedMessages.NonAdminMessage(ctx);
             }
         }
 
@@ -94,7 +126,7 @@ namespace Meira.SlashCommands
             }
             else
             {
-                await NonAdminMessage(ctx);
+                await _defaultEmbedMessages.NonAdminMessage(ctx);
             }
         }
 
@@ -133,7 +165,7 @@ namespace Meira.SlashCommands
             }
             else
             {
-                await NonAdminMessage(ctx);
+                await _defaultEmbedMessages.NonAdminMessage(ctx);
             }
         }
 
@@ -172,22 +204,10 @@ namespace Meira.SlashCommands
             }
             else
             {
-                await NonAdminMessage(ctx);
+                await _defaultEmbedMessages.NonAdminMessage(ctx);
             }
         }
-        
+
         #endregion Cancel Timeout Command
-
-        public async Task NonAdminMessage(InteractionContext ctx)
-        {
-            var nonAdminMessage = new DiscordEmbedBuilder()
-            {
-                Title = "Access Denied",
-                Description = "You must be an administrator to use this command",
-                Color = DiscordColor.Red
-            };
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(nonAdminMessage));
-        }
     }
 }
