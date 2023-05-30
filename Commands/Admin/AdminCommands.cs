@@ -1,14 +1,11 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Meira.Utils;
 using Meira.Validations;
 
 namespace Meira.SlashCommands
 {
-    [RequirePermissions(Permissions.Administrator, ignoreDms: true)]
-    internal class AdminSlashCommands : ApplicationCommandModule
+    internal class AdminCommands : ApplicationCommandModule
     {
         private readonly DefaultEmbedMessages _defaultEmbedMessages = new();
 
