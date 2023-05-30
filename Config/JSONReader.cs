@@ -6,17 +6,15 @@ namespace Meira.Config
     internal class JSONReader
     {
         public string Token { get; set; }
-        public string Prefix { get; set; }
 
-        public async Task ReadJSON()
+        public async Task<T> ReadJSON<T>(string file)
         {
-            using (StreamReader sr = new StreamReader("config.json", new UTF8Encoding(false)))
+            using (StreamReader sr = new(file, new UTF8Encoding(false)))
             {
                 string json = await sr.ReadToEndAsync();
-                ConfigJSON obj = JsonConvert.DeserializeObject<ConfigJSON>(json);
+                T obj = JsonConvert.DeserializeObject<T>(json);
 
-                this.Token = obj.Token;
-                this.Prefix = obj.Prefix;
+                return obj;
             }
         }
     }
