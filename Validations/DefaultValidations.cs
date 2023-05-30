@@ -33,5 +33,33 @@ namespace Meira.Validations
             }
             return false;
         }
+
+        /// <summary>
+        /// Extension method to check if Guild's member can manage channels or has the permission.
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public static bool CanManageChannels(this DiscordMember member)
+        {
+            if (member.Permissions.HasPermission(Permissions.ManageChannels))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Extension method to check if Guild's member can manage roles or has the permission.
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public static bool CanManageRoles(this DiscordMember member)
+        {
+            if (member.Permissions.HasPermission(Permissions.ManageRoles))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
