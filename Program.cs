@@ -4,6 +4,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using Meira.Commands;
 using Meira.Config;
 using Meira.SlashCommands;
 
@@ -17,12 +18,12 @@ namespace Meira
         private static async Task Main(string[] args)
         {
             var configJsonFile = new JSONReader();
-            await configJsonFile.ReadJSON();
+            ConfigJSON config = await configJsonFile.ReadJSON<ConfigJSON>("config.json");
 
             var discordConfig = new DiscordConfiguration()
             {
                 Intents = DiscordIntents.All,
-                Token = configJsonFile.Token,
+                Token = config.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true
             };
@@ -36,18 +37,9 @@ namespace Meira
 
             Client.Ready += OnClientReady;
 
-            var commandsConfig = new CommandsNextConfiguration()
-            {
-                StringPrefixes = new string[] { configJsonFile.Prefix },
-                EnableMentionPrefix = true,
-                EnableDms = true,
-                EnableDefaultHelp = false,
-            };
-
             var slashCommandsConfig = Client.UseSlashCommands();
-            slashCommandsConfig.RegisterCommands<AdminSlashCommands>();
-
-            Commands = Client.UseCommandsNext(commandsConfig);
+            slashCommandsConfig.RegisterCommands<AdminCommands>();
+            slashCommandsConfig.RegisterCommands<UserSubmissionCommand>();
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
