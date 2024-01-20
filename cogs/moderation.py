@@ -18,5 +18,24 @@ class Moderation(commands.Cog, name="moderation"):
         )
         await ctx.send(embed=embed)
 
+    @app_commands.command()
+    @app_commands.describe(
+        nome = "Nome da thread",
+        mensagem_id = "ID da mensagem que será enviada para a thread"
+    )
+    async def create_thread(self, interaction: discord.Interaction, nome: str = "", mensagem_id: str = "") -> None:
+        await interaction.response.defer()
+
+        if mensagem_id != "":
+            mensagem = await interaction.channel.fetch_message(int(mensagem_id))
+            nome = f"Thread ({mensagem.id})"
+            created_thread = await interaction.channel.create_thread(name=nome, message=mensagem)
+            await interaction.followup.send(f"Thread criada: {created_thread.mention}")
+        else:
+            created_thread = await interaction.channel.create_thread(
+                name=nome,
+                type=discord.ChannelType.public_thread)
+            await interaction.followup.send(f"Thread criada: {created_thread.mention}", ephemeral=True)
+
 async def setup(client: commands.Bot) -> None:
     await client.add_cog(Moderation(client))
