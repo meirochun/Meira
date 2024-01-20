@@ -68,4 +68,4 @@ class MeiraBot(commands.Bot):
 
 load_dotenv()
 bot = MeiraBot()
-bot.run(os.getenv('TOKEN'))
+bot.run(os.getenv('token'))
