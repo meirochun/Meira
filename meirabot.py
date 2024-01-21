@@ -9,6 +9,9 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+load_dotenv()
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+
 if not os.path.isfile(f"{os.path.realpath(os.path.dirname(__file__))}/config.json"):
     sys.exit("'config.json' não encontrado! Por favor, adicione-o e tente novamente.")
 else:
@@ -23,6 +26,7 @@ class MeiraBot(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned_or(config["prefix"]),
+            case_insensitive=True,
             intents=intents,
             help_command=None,
         )
@@ -41,31 +45,25 @@ class MeiraBot(commands.Bot):
                     self.logger.error(f"Não foi possível carregar a extensão {extension} devido a {exception}")
 
     async def setup_hook(self) -> None:
-        """
-        Setup hook para carregar as extensões.
-        """
         await self.load_cogs()
 
     async def on_message(self, message: discord.Message) -> None:
-        """
-        Evento chamado quando o bot recebe uma mensagem.
-        Impede que o bot responda a si mesmo e a outros bots.
-        """
         if message.author == self.user or message.author.bot:
             return
         await self.process_commands(message)
 
     async def on_ready(self) -> None:
+        synced = await self.tree.sync()
         self.logger.info(f"Logado como {self.user.name}")
         self.logger.info(f"Sistema operacional: {platform.system()} {platform.release()}")
         self.logger.info(f"Python: {platform.python_version()}")
         self.logger.info(f"Discord.py: {discord.__version__}")
         self.logger.info("-----------------------------")
-        synced = await self.tree.sync()
         self.logger.info(f"Slash commands sincronizados: {str(len(synced))}.")
         self.logger.info("-----------------------------")
-        await bot.change_presence(activity=discord.Game(name="Meirando..."), status=discord.Status.idle)
+        await bot.change_presence(
+            activity=discord.CustomActivity(name="Meirando..."),
+            status=discord.Status.online)
 
-load_dotenv()
 bot = MeiraBot()
-bot.run(os.getenv('token'))
+bot.run(DISCORD_BOT_TOKEN)
