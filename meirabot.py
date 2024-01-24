@@ -54,13 +54,12 @@ class MeiraBot(commands.Bot):
 
     async def on_ready(self) -> None:
         synced = await self.tree.sync()
-        self.logger.info(f"Logado como {self.user.name}")
         self.logger.info(f"Sistema operacional: {platform.system()} {platform.release()}")
         self.logger.info(f"Python: {platform.python_version()}")
         self.logger.info(f"Discord.py: {discord.__version__}")
-        self.logger.info("-----------------------------")
         self.logger.info(f"Slash commands sincronizados: {str(len(synced))}.")
         self.logger.info("-----------------------------")
+        self.logger.info(f"Meira online!")
         await bot.change_presence(
             activity=discord.CustomActivity(name="Meirando..."),
             status=discord.Status.online)
