@@ -10,6 +10,26 @@ class About(commands.Cog, name='sobre'):
     def __init__(self, client: commands.Bot) -> None:
         self.client = client
 
+    @app_commands.command(name="help", description="Mostra os comandos disponíveis")
+    async def help(self, interaction: discord.Interaction) -> None:
+        slash_commands = self.get_app_commands()
+        embed = discord.Embed(
+            title="Listinha de comandos",
+            description="Prefixo: *m!*",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="Comandos com prefixo", value="", inline=False)
+        for command in self.client.commands:
+            embed.add_field(name=f"m! {command.name}", value=command.description, inline=False)
+
+        embed.add_field(name="----------------", value="")
+        
+        embed.add_field(name="Comandos com barra", value="", inline=False)
+        for slash_command in slash_commands:
+            embed.add_field(name=f"/{slash_command.name}", value=slash_command.description, inline=False)
+
+        await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=60)
+
     @app_commands.command(description="Informações sobre o bot")
     async def sobre(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
