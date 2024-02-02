@@ -45,7 +45,6 @@ class About(commands.Cog, name='sobre'):
             text=f"Desenvolvido por meirochou | 2023-{datetime.now().year}",
             icon_url = owner_avatar_url
         )
-
         await interaction.followup.send(embed=embed)
 
     @commands.command(name="ping", description="Retorna o ping do bot")
