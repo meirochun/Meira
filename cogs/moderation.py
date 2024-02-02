@@ -22,5 +22,34 @@ class Moderation(commands.Cog, name="moderation"):
         )
         await ctx.send(embed=embed)
 
+    @app_commands.command(name="add_song", description="OWNER ONLY COMMAND")
+    @app_commands.describe(
+        nome = "Nome da música",
+        link = "Link da música"
+    )
+    async def add_song(self,
+                       interaction: discord.Interaction,
+                       nome: str,
+                       link: str) -> None:
+        await interaction.response.defer()
+
+        if interaction.user.id != 267410788996743168:
+            await interaction.response.send_message("Você não tem permissão para usar este comando.", ephemeral=True)
+            return
+
+        await interaction.followup.send("Adicionando música...")
+
+        try:
+            data = { "name": f"{nome}", "link": f"{link}" }
+            url = "http://localhost:3000/add-song"
+            res = await requests.post(url, data=data)
+
+            if res.status_code == 200:
+                await interaction.followup.send("Música adicionada com sucesso!")
+            else:
+                await interaction.followup.send("Ocorreu um erro ao adicionar a música.")
+        except Exception as e:
+            await interaction.followup.send(f"Ocorreu um erro ao adicionar a música: {e}")
+
 async def setup(client: commands.Bot) -> None:
     await client.add_cog(Moderation(client))
