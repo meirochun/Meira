@@ -16,11 +16,9 @@ class Events(commands.Cog):
 
         if "suinema" in message.content:
             try:
-                with open(os.getenv("SUINEMA_PATH_IMG"), 'rb') as file:
-                    file_content = discord.File(file)
-                    await message.channel.send(file=file_content);
-            except Exception as ex:
-                await message.channel.send(f"Erro: {ex}");
+                await message.channel.send(os.getenv("SUINEMA"));
+            except:
+                await message.channel.send(f"Suinema expirou 🥲");
 
 async def setup(bot) -> None:
     await bot.add_cog(Events(bot))
